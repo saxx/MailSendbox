@@ -9,4 +9,5 @@
   <add key="Pop3Server" value="" />
   <add key="Pop3Username" value="" />
   <add key="Pop3Password" value="" />
+  <add key="AppfailApiToken" value="" />
 </appSettings>

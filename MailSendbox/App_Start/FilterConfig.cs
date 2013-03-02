@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using AppfailReporting.Mvc;
 using System.Web.Mvc;
 
 namespace MailSendbox
@@ -7,6 +7,7 @@ namespace MailSendbox
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
+            filters.Add(new AppfailReportAttribute()); 
             filters.Add(new HandleErrorAttribute());
         }
     }
