@@ -1,0 +1,38 @@
+﻿@model IEnumerable<MailSendbox.Models.Mail>
+
+<div class="hero-unit">
+    <h2>Send an e-mail to &laquo;anything&raquo;@@mailsendbox.com</h2>
+    <p>and your e-mail will be displayed here. Great for testing your mail-sending code.</p>
+</div>
+
+@{
+    const int mailsPerRow = 3;
+    const int maxRows = 10;
+
+    var currentRow = 1;
+}
+
+@while (currentRow <= maxRows)
+{
+    <div class="row-fluid show-grid">
+        @foreach (var mail in Model.Skip((currentRow - 1) * mailsPerRow).Take(mailsPerRow))
+        {
+            <div class="span4">
+                <h4>@mail.Subject</h4>
+                <p>From: <code>@mail.From</code></p>
+                <p>To: <code>@mail.To</code></p>
+                <p class="muted">@Html.Raw(mail.GetBodySnippetAsHtml())</p>
+            </div>
+        }
+
+        @if (Model.Count() <= currentRow * mailsPerRow)
+        {
+            break;
+        }
+
+        @{
+        currentRow++;
+        }
+    </div>
+}
+
