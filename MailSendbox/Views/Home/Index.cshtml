@@ -1,53 +1,60 @@
-﻿@using System.Globalization
-@model IEnumerable<MailSendbox.Models.Mail>
-
-<div class="hero-unit">
-    <h2>Send an e-mail to &laquo;anything&raquo;@@mailsendbox.net</h2>
-    <p>and your e-mail will be displayed here. Great for testing your mail-sending code.</p>
+﻿<div class="hero-unit">
+    <h2>Send any e-mail to &laquo;anything&raquo;@@mailsendbox.net ...</h2>
+    <p>... and it will be displayed here. Great for testing your mail-sending code.</p>
+    <p>Last time we checked for e-mails was <span id="lastCheck">0 seconds ago</span>. We'll refresh automatically if there are any new ones.</p>
 </div>
 
-@{
-    const int mailsPerRow = 3;
-    const int maxRows = 10;
+<div id="mails"></div>
 
-    var currentRow = 1;
-}
-
-@while (currentRow <= maxRows)
+@section scripts
 {
-    <div class="row-fluid show-grid">
-        @foreach (var mail in Model.Skip((currentRow - 1) * mailsPerRow).Take(mailsPerRow))
-        {
-            <div class="span4">
-                <h4>@mail.Subject</h4>
-                <p>
-                    <table>
-                        <tr>
-                            <td>From: </td>
-                            <td><code>@mail.From</code></td>
-                        </tr>
-                        <tr>
-                            <td>To: </td>
-                            <td><code>@mail.To</code></td>
-                        </tr>
-                        <tr>
-                            <td>On: </td>
-                            <td><code>@mail.ReceivedDate.ToString(CultureInfo.CurrentCulture)</code></td>
-                        </tr>
-                    </table>
-                </p>
-                <p class="muted">@Html.Raw(mail.GetBodySnippetAsHtml())</p>
-            </div>
-        }
+    <script>
 
-        @if (Model.Count() <= currentRow * mailsPerRow)
-        {
-            break;
-        }
+        var _lastCheck = new Date().getTime();
 
-        @{
-        currentRow++;
+        $(function () {
+            var mailsHub = $.connection.mailsHub;
+
+            mailsHub.client.newMailsArrived = function (result) {
+                renderMails(result.AllMails);
+            };
+
+            mailsHub.client.mailsChecked = function () {
+                _lastCheck = new Date().getTime();
+            };
+
+            setInterval("$('#lastCheck').html(Math.round((new Date().getTime() - _lastCheck) / 1000, 0) + ' seconds ago');", 25);
+
+            $.connection.hub.start().done(function () {
+                mailsHub.server.init();
+            });
+        });
+
+        function renderMails(mails) {
+            var container = $("#mails");
+            container.html("");
+
+            for (var i = 0; i < 10; i++) {
+                var row = $("<div />").addClass("row-fluid");
+                container.append(row);
+
+                for (var j = 0; j < 3; j++) {
+                    var index = i * 3 + j;
+                    var mail = mails[index];
+                    if (!mail)
+                        return;
+
+                    var cell = $("<div />").addClass("span4");
+                    row.append(cell);
+
+                    cell.append("<h4>" + mail.Subject + "</h4>");
+                    cell.append("<table><tr><td>From: </td><td><code>" + mail.From + "</code></td></tr>" +
+                        "<tr><td>To: </td><td><code>" + mail.To + "</code></td></tr>" +
+                        "<tr><td>On: </td><td><code>" + mail.Date + "</code></td></tr></tbody></table>");
+                    cell.append("<p class=''muted>" + mail.Body + "</p>");
+                }
+            }
         }
-    </div>
+    </script>
 }
 

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using MailSendbox.Code;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 
 namespace MailSendbox.Controllers
 {
@@ -8,9 +6,7 @@ namespace MailSendbox.Controllers
     {
         public ActionResult Index()
         {
-            var repo = new MailRepository(new Pop3Client());
-            var mails = repo.Get().OrderByDescending(x => x.ReceivedDate);
-            return View(mails);
+            return View();
         }
     }
 }
