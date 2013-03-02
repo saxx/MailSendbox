@@ -52,7 +52,7 @@ namespace MailSendbox.Code
                             var fetchedMails = _mailRepository.Get().OrderByDescending(x => x.ReceivedDate).ToList();
 
                             var newMails = fetchedMails.Where(m => !_cachedMails.Any(x => x.Uid.Is(m.Uid))).ToList();
-                            if (/*newMails.Count > 0 &&*/ NewMailsArrived != null)
+                            if (newMails.Count > 0 && NewMailsArrived != null)
                                 NewMailsArrived(newMails);
 
                             _cachedMails = fetchedMails;

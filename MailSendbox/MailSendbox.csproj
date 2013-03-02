@@ -141,10 +141,14 @@
     <Content Include="Content\Site.css" />
     <Content Include="Content\images\glyphicons-halflings-white.png" />
     <Content Include="Content\images\glyphicons-halflings.png" />
+    <Content Include="apple-touch-icon-precomposed.png" />
     <Content Include="Global.asax" />
     <None Include="AppSettings.Debug.config" />
     <None Include="AppSettings.Debug.config.example" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="favicon.ico" />
+    <Content Include="apple-touch-icon.png" />
+    <Content Include="robots.txt" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
