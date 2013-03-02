@@ -36,8 +36,11 @@ namespace MailSendbox.Code
 
         private const int FetchIntervalInSeconds = 10;
         private static bool _isStopping;
+
         public void StartAsyncFetching()
         {
+            Fetch();
+
             var taskFactory = new TaskFactory();
             taskFactory.StartNew(() =>
                 {
@@ -48,17 +51,7 @@ namespace MailSendbox.Code
                         if (currentIntervalCount >= FetchIntervalInSeconds)
                         {
                             currentIntervalCount = 0;
-
-                            var fetchedMails = _mailRepository.Get().OrderByDescending(x => x.ReceivedDate).ToList();
-
-                            var newMails = fetchedMails.Where(m => !_cachedMails.Any(x => x.Uid.Is(m.Uid))).ToList();
-                            if (newMails.Count > 0 && NewMailsArrived != null)
-                                NewMailsArrived(newMails);
-
-                            _cachedMails = fetchedMails;
-
-                            if (MailsChecked != null)
-                                MailsChecked(_cachedMails);
+                            Fetch();
                         }
 
                         currentIntervalCount++;
@@ -70,6 +63,27 @@ namespace MailSendbox.Code
         public void StopAsyncFetching()
         {
             _isStopping = true;
+        }
+
+        private void Fetch()
+        {
+            try
+            {
+                var fetchedMails = _mailRepository.Get().OrderByDescending(x => x.ReceivedDate).ToList();
+
+                var newMails = fetchedMails.Where(m => !_cachedMails.Any(x => x.Uid.Is(m.Uid))).ToList();
+                if (newMails.Count > 0 && NewMailsArrived != null)
+                    NewMailsArrived(newMails);
+
+                _cachedMails = fetchedMails;
+
+                if (MailsChecked != null)
+                    MailsChecked(_cachedMails);
+            }
+            catch
+            {
+                //do nothing here
+            }
         }
     }
 
