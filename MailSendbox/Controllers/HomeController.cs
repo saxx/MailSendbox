@@ -9,7 +9,7 @@ namespace MailSendbox.Controllers
         public ActionResult Index()
         {
             var repo = new MailRepository(new Pop3Client());
-            var mails = repo.Get();
+            var mails = repo.Get().OrderByDescending(x => x.ReceivedDate);
             return View(mails);
         }
     }
