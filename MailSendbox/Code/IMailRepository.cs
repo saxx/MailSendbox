@@ -6,6 +6,6 @@ namespace MailSendbox.Code
     public interface IMailRepository
     {
         IEnumerable<Mail> Get();
-        void Delete(string uid);
+        void Delete(int index);
     }
 }

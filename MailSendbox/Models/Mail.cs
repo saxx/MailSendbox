@@ -5,7 +5,8 @@ namespace MailSendbox.Models
 {
     public class Mail
     {
-        public string Uid { get; set; }
+        public string Id { get; set; }
+        public int Index { get; set; }
         public string Subject { get; set; }
         public string Body { get; set; }
         public string From { get; set; }

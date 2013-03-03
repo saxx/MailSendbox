@@ -10,10 +10,10 @@ namespace MailSendbox.Code
 {
     public class MailFetcher : IDisposable
     {
-        public delegate void MailsDelegate(IEnumerable<Mail> mails);
-
-        public event MailsDelegate NewMailsArrived;
-        public event MailsDelegate MailsChecked;
+        public delegate void NewMailsArrivedDelegate(IEnumerable<Mail> allMails, IEnumerable<Mail> newMails);
+        public delegate void MailsCheckedDelegate();
+        public event NewMailsArrivedDelegate NewMailsArrived;
+        public event MailsCheckedDelegate MailsChecked;
 
         private readonly MailRepository _mailRepository;
 
@@ -34,7 +34,7 @@ namespace MailSendbox.Code
             return _cachedMails;
         }
 
-        private const int FetchIntervalInSeconds = 10;
+        private const int FetchIntervalInSeconds = 20;
         private static bool _isStopping;
 
         public void StartAsyncFetching()
@@ -69,16 +69,25 @@ namespace MailSendbox.Code
         {
             try
             {
+                const int maxMailsInInbox = 100;
+                
                 var fetchedMails = _mailRepository.Get().OrderByDescending(x => x.ReceivedDate).ToList();
 
-                var newMails = fetchedMails.Where(m => !_cachedMails.Any(x => x.Uid.Is(m.Uid))).ToList();
+                if (fetchedMails.Count > maxMailsInInbox)
+                {
+                    foreach (var mailToDelete in fetchedMails.Skip(maxMailsInInbox))
+                        _mailRepository.Delete(mailToDelete.Index);
+                    fetchedMails = fetchedMails.Take(maxMailsInInbox).ToList();
+                }
+
+                var newMails = fetchedMails.Where(m => !_cachedMails.Any(x => x.Id.Is(m.Id))).ToList();
                 if (newMails.Count > 0 && NewMailsArrived != null)
-                    NewMailsArrived(newMails);
+                    NewMailsArrived(fetchedMails, newMails);
 
                 _cachedMails = fetchedMails;
 
                 if (MailsChecked != null)
-                    MailsChecked(_cachedMails);
+                    MailsChecked();
             }
             catch
             {

@@ -1,22 +1,51 @@
 ﻿<div class="hero-unit">
     <h2>Send an e-mail to &laquo;anything&raquo;@@mailsendbox.net ...</h2>
     <p>... and it will be displayed here. Great for testing your mail-sending code.</p>
-    <p>Last time we checked for e-mails was <span id="lastCheck">0 seconds ago</span>. This page will refresh automatically if there are any new ones.</p>
 </div>
 
 <div id="mails">Just a second, we're loading the e-mails ...</div>
+
+<footer>MailSendbox by Hannes Sachsenhofer, Christoph Zöttl | Last check: <span id="lastCheck">0 seconds ago</span>. | <a href="#" id="allowNotifications">Allow desktop notifications</a></footer>
 
 @section scripts
 {
     <script>
 
         var _lastCheck = new Date().getTime();
+        var _notification;
 
         $(function () {
             var mailsHub = $.connection.mailsHub;
 
+            $("#allowNotifications").click(function () {
+                window.webkitNotifications.requestPermission();
+            });
+
             mailsHub.client.newMailsArrived = function (result) {
                 renderMails(result.AllMails);
+
+                if (result.NewMails.length > 0) {
+                    if (window.webkitNotifications.checkPermission() == 0) { // 0 is PERMISSION_ALLOWED
+                        if (_notification)
+                            _notification.cancel();
+
+                        var subject = result.NewMails + " new e-mails arrived on MailSendbox";
+                        if (result.NewMails.length == 1)
+                            subject = "1 new e-mail arrived on MailSendbox";
+                        var text = "";
+                        $.each(result.NewMails, function(i, val) {
+                            if (text != "")
+                                text += "\n";
+                            text += val.Subject;
+                        });
+
+                        _notification = window.webkitNotifications.createNotification("@Url.Content("~/apple-touch-icon.png")", subject, text);
+                        _notification.ondisplay = function() {
+                            setTimeout("_notification.cancel()", 15000);
+                        };
+                        _notification.show();
+                    }
+                }
             };
 
             mailsHub.client.mailsChecked = function () {

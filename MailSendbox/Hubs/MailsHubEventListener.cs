@@ -23,19 +23,19 @@ namespace MailSendbox.Hubs
             MailFetcherFactory.Current.NewMailsArrived += Current_NewMailsArrived;
         }
 
-        void Current_NewMailsArrived(IEnumerable<Mail> newMails)
+        void Current_NewMailsArrived(IEnumerable<Mail> allMails, IEnumerable<Mail> newMails)
         {
             var hub = GlobalHost.ConnectionManager.GetHubContext<MailsHub>();
 
             var result = new
             {
-                AllMails = MailFetcherFactory.Current.GetMails().Take(30).Select(x => new MailHelper(x)),
+                AllMails = allMails.Take(30).Select(x => new MailHelper(x)),
                 NewMails = newMails.Select(x => new MailHelper(x))
             };
             hub.Clients.All.newMailsArrived(result);
         }
 
-        void Current_MailsChecked(IEnumerable<Mail> allMails)
+        void Current_MailsChecked()
         {
             var hub = GlobalHost.ConnectionManager.GetHubContext<MailsHub>();
             hub.Clients.All.mailsChecked();

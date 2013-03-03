@@ -28,11 +28,11 @@ namespace MailSendbox.Code
                 for (var i = messageCount; i > 0; i--)
                 {
                     var message = _pop3Client.GetMessage(i);
-
                     var plainText = message.FindFirstPlainTextVersion();
                     var mail = new Mail
                         {
-                            Uid = message.Headers.MessageId,
+                            Index = i,
+                            Id = message.Headers.MessageId ?? message.Headers.Subject + "_" + message.Headers.DateSent,
                             Body = plainText == null ? string.Empty : plainText.GetBodyAsText(),
                             ReceivedDate = message.Headers.DateSent,
                             From = message.Headers.From.Address,
@@ -55,24 +55,12 @@ namespace MailSendbox.Code
             return result;
         }
 
-        public void Delete(string uid)
+        public void Delete(int index)
         {
             try
             {
                 ConnectAndAuthenticate();
-
-                var allUids = _pop3Client.GetMessageUids();
-
-                var index = 0;
-                foreach (var u in allUids)
-                {
-                    index++;
-                    if (u.Is(uid))
-                    {
-                        _pop3Client.DeleteMessage(index);
-                        break;
-                    }
-                }
+                _pop3Client.DeleteMessage(index);
             }
             catch (Exception ex)
             {
